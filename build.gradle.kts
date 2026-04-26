@@ -268,7 +268,7 @@ tasks.register<Task>("computeTransformerIntersection") {
             Pair(className, resolvedEntries)
         }.toMap()
 
-        Pair(type, classEntries)
+        Pair(type, resolvedClassEntries)
     }.toMap()
 
     output.forEach { type, entries ->
