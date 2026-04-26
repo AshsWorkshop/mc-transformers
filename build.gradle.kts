@@ -369,7 +369,7 @@ val checkFileHash = tasks.register<Task>("checkGeneratedTransformerHashes") {
     description = "Checks the hashes of the generated artifacts."
 
     // Define outputs
-    val taskOutput = rootProject.file(".generated-hashes.json")
+    val taskOutput = rootProject.file(".generated-hashes/${minecraftVersion}.json")
     outputs.file(taskOutput)
 
     // Define inputs
@@ -393,6 +393,7 @@ val checkFileHash = tasks.register<Task>("checkGeneratedTransformerHashes") {
         }
         entries[relative] = hash
     }
+    Files.createDirectories(taskOutput.parentFile.toPath())
     FileWriter(taskOutput, StandardCharsets.UTF_8).use { it.write(JsonOutput.prettyPrint(JsonOutput.toJson(entries))) }
 }
 
