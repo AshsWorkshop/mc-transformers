@@ -5,6 +5,19 @@ plugins {
     idea
 }
 
+val minecraftVersion = providers.gradleProperty("minecraft_version").get()
+
+class MinecraftMetadataSupplier : ComponentMetadataSupplier {
+
+    override fun execute(details: ComponentMetadataSupplierDetails) {
+        if (details.id.group == "net.fabricmc.fabric-api" && details.id.moduleIdentifier.name == "fabric-api") {
+            val minecraftVersion = details.id.version.split("+")[1]
+            details.result.setStatus(minecraftVersion)
+            details.result.setStatusScheme(listOf(minecraftVersion))
+        }
+    }
+}
+
 repositories {
     mavenCentral()
     maven {
@@ -14,15 +27,23 @@ repositories {
     maven {
         name = "Fabric Maven"
         url = uri("https://maven.fabricmc.net/")
+        setMetadataSupplier(MinecraftMetadataSupplier::class.java)
     }
 }
 
-val transformers = configurations.create("transformers")
+val transformers = configurations.create("transformers") {
+    resolutionStrategy {
+        cacheDynamicVersionsFor(10, TimeUnit.MINUTES)
+        cacheChangingModulesFor(10, TimeUnit.MINUTES)
+    }
+}
 
 dependencies {
-    transformers("net.neoforged:neoforge:26.1.2.29-beta")
-    transformers("net.fabricmc.fabric-api:fabric-api:0.145.4+26.1.2")
+    transformers("net.neoforged:neoforge:${if (minecraftVersion.split(".").size == 2) "${minecraftVersion}.0" else minecraftVersion}.+")
+    transformers("net.fabricmc.fabric-api:fabric-api:latest.${minecraftVersion}")
 }
+
+transformers.incoming.artifacts.forEach { println(it) }
 
 val unpack = tasks.register<Task>("unpackTransformers") {
     description = "Unpacks the transformers from the artifact dependencies."
