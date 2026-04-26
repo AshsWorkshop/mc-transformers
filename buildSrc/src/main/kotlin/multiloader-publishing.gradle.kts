@@ -22,20 +22,20 @@ publishing {
                 password = System.getenv("GITHUB_TOKEN")
             }
         }
-        maven {
-            name = "UUID"
-            url = uri("https://maven.uuid.gg/${
-                "git log -1 --pretty=%B".runCommand(workingDir = rootProject.rootDir, orElse = "").let {
-                    if ("""^[^\(\)]+\([^\(\)]*release(?:(?!\[)|\[( *[a-zA-Z0-9]+(?:, *[a-zA-Z0-9]+)*) *\])[^\(\)]*\):.*$""".toRegex().matches(it))
-                        "releases"
-                    else "snapshots"
-                }
-            }")
-            credentials {
-                username = System.getenv("UUID_USERNAME")
-                password = System.getenv("UUID_PASSWORD")
-            }
-        }
+//        maven {
+//            name = "UUID"
+//            url = uri("https://maven.uuid.gg/${
+//                "git log -1 --pretty=%B".runCommand(workingDir = rootProject.rootDir, orElse = "").let {
+//                    if ("""^[^\(\)]+\([^\(\)]*release(?:(?!\[)|\[( *[a-zA-Z0-9]+(?:, *[a-zA-Z0-9]+)*) *\])[^\(\)]*\):.*$""".toRegex().matches(it))
+//                        "releases"
+//                    else "snapshots"
+//                }
+//            }")
+//            credentials {
+//                username = System.getenv("UUID_USERNAME")
+//                password = System.getenv("UUID_PASSWORD")
+//            }
+//        }
     }
 
     publications.withType<MavenPublication>().configureEach {
