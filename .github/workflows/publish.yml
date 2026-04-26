@@ -107,5 +107,13 @@ jobs:
             # Commit files
             git add .
             git commit -a -m "chore([skip ci]): Action ${{ github.run_number }}: ${{ matrix.versions }} bumps"
-            git push --force-with-lease -u origin ${{ github.ref_name }}
+            
+            versions_against=$(echo "${{ needs.determine-versions.outputs.versions }}" | jq '. | length')
+            MAX_RETRIES=$((versions_against * 5))
+            count=0
+            until git push --force-with-lease -u origin ${{ github.ref_name }} || [ $count -eq $MAX_RETRIES ]; do
+              ((count++))
+              git fetch
+              git merge -X theirs
+            done
           fi
