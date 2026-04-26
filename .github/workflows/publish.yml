@@ -108,7 +108,7 @@ jobs:
             git add .
             git commit -a -m "chore([skip ci]): Action ${{ github.run_number }}: ${{ matrix.versions }} bumps"
             
-            versions_against=$(echo "${{ needs.determine-versions.outputs.versions }}" | jq '. | length')
+            versions_against=$(echo '${{ needs.determine-versions.outputs.versions }}' | jq '. | length')
             MAX_RETRIES=$((versions_against * 5))
             count=0
             until git push --force-with-lease -u origin ${{ github.ref_name }} || [ $count -eq $MAX_RETRIES ]; do
