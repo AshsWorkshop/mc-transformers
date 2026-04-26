@@ -1,11 +1,18 @@
+import net.ashwork.gradle.multiloader.configureInheritingFeature
+import net.ashwork.gradle.multiloader.publication
+import net.ashwork.gradle.multiloader.publishedAccessTransformer
+import net.ashwork.gradle.multiloader.resolveProperty
 import java.nio.file.Files
 
 plugins {
     java
     idea
+    id("multiloader-publishing")
 }
 
 val minecraftVersion = providers.gradleProperty("minecraft_version").get()
+val fullMinecraftVersion = if (minecraftVersion.split(".").size == 2) "${minecraftVersion}.0" else minecraftVersion
+version = "${fullMinecraftVersion}.${providers.gradleProperty("${minecraftVersion}_build").get()}"
 
 class MinecraftMetadataSupplier : ComponentMetadataSupplier {
 
@@ -39,11 +46,9 @@ val transformers = configurations.create("transformers") {
 }
 
 dependencies {
-    transformers("net.neoforged:neoforge:${if (minecraftVersion.split(".").size == 2) "${minecraftVersion}.0" else minecraftVersion}.+")
+    transformers("net.neoforged:neoforge:${fullMinecraftVersion}.+")
     transformers("net.fabricmc.fabric-api:fabric-api:latest.${minecraftVersion}")
 }
-
-transformers.incoming.artifacts.forEach { println(it) }
 
 val unpack = tasks.register<Task>("unpackTransformers") {
     description = "Unpacks the transformers from the artifact dependencies."
@@ -169,6 +174,14 @@ data class FieldTransformer(val name: String, override val original: String): Tr
         return if(otherHasWildcard) setOf(this) else output
     }
 }
+class TransformerType(val name: String, val group: String, val extension: String, val reader: (File) -> Map<String, Set<Transformer>>, val header: String = "") {}
+
+fun buildTransformerTypes(): Map<String, TransformerType> {
+    val transformerTypes: MutableMap<String, TransformerType> = mutableMapOf()
+    transformerTypes.computeIfAbsent("cfg") { TransformerType("accesstransformer", "accessTransformers", it, ::fromTransformer) }
+    transformerTypes.computeIfAbsent("classtweaker") { TransformerType("accesswidener", "classTweakers", it, ::fromTweaker, "classTweaker  v1  official") }
+    return transformerTypes
+}
 
 fun fromTweaker(file: File): Map<String, Set<Transformer>> {
     val output = mutableMapOf<String, MutableSet<Transformer>>()
@@ -227,18 +240,56 @@ fun fromTransformer(file: File): Map<String, Set<Transformer>> {
     return output
 }
 
-tasks.register<Task>("computeTransformerIntersection") {
+val generatedTransformers = layout.buildDirectory.dir("generated")
+
+val allTransformers = tasks.register<Task>("allTransformers") {
+    group = "transformers"
+    description = "Merges the unpacked transformers into a single file."
+    dependsOn(unpack)
+
+    val transformerTypes = buildTransformerTypes()
+
+    // Define outputs
+    val taskOutput = generatedTransformers.map { it.dir("main") }
+    outputs.dir(taskOutput)
+
+    // Define inputs
+    inputs.dir(layout.buildDirectory.dir("transformers"))
+
+    // Create transformer maps
+    val transformers: MutableMap<TransformerType, MutableMap<String, MutableSet<Transformer>>> = mutableMapOf()
+    inputs.files.forEach {
+        val type = transformerTypes[it.path.substring(it.path.lastIndexOf(".") + 1)]
+        if (type == null) return@forEach
+
+        // Read entries
+        val entries = type.reader(it)
+
+        // Merge entries into main map
+        val output = transformers.computeIfAbsent(type) { mutableMapOf<String, MutableSet<Transformer>>() }
+        entries.forEach { className, transformers -> output.computeIfAbsent(className) { mutableSetOf<Transformer>() }.addAll(transformers) }
+    }
+
+    // Write to a single file
+    transformers.forEach { type, entries ->
+        val outputFile = taskOutput.map { it.file("${type.group}/${type.name}.${type.extension}") }
+        Files.createDirectories(outputFile.get().asFile.parentFile.toPath())
+        outputFile.get().asFile.printWriter(Charsets.UTF_8).use { out ->
+            if (type.header.isNotEmpty()) out.println(type.header)
+            entries.flatMap { it.value }.map { it.original }.forEach { out.println(it) }
+        }
+    }
+}
+
+val computeIntersection = tasks.register<Task>("computeTransformerIntersection") {
     group = "transformers"
     description = "Computes the intersection from the unpacked transformers."
     dependsOn(unpack)
 
-    class TransformerType(val name: String, val extension: String, val reader: (File) -> Map<String, Set<Transformer>>, val header: String = "") {}
-    val transformerTypes: MutableMap<String, TransformerType> = mutableMapOf()
-    transformerTypes.computeIfAbsent("cfg") { TransformerType("accesstransformer", it, ::fromTransformer) }
-    transformerTypes.computeIfAbsent("classtweaker") { TransformerType("accesswidener", it, ::fromTweaker, "classTweaker  v1  official") }
+    val transformerTypes = buildTransformerTypes()
 
     // Define outputs
-    val taskOutput = layout.buildDirectory.dir("generated")
+    val taskOutput = generatedTransformers.map { it.dir("common") }
     outputs.dir(taskOutput)
 
     // Define inputs
@@ -293,11 +344,24 @@ tasks.register<Task>("computeTransformerIntersection") {
     }.toMap()
 
     output.forEach { type, entries ->
-        val outputFile = taskOutput.map { it.file("${type.name}/${type.name}.${type.extension}") }
+        val outputFile = taskOutput.map { it.file("${type.group}/${type.name}.${type.extension}") }
         Files.createDirectories(outputFile.get().asFile.parentFile.toPath())
         outputFile.get().asFile.printWriter(Charsets.UTF_8).use { out ->
             if (type.header.isNotEmpty()) out.println(type.header)
             entries.flatMap { it.value }.map { it.original }.forEach { out.println(it) }
         }
     }
+}
+
+// Setup publishing
+val intersect = configureInheritingFeature("common", "main", publish = true)
+configureInheritingFeature("main", publish = true)
+
+generatedTransformers.get().asFileTree.forEach {
+    var components = it.toRelativeString(generatedTransformers.get().asFile).split(File.separator)
+    project.publishedAccessTransformer(it, components[1], components[2].substring(0, components[2].indexOf(".")), components[0])
+}
+
+publication {
+    name = resolveProperty("mod_name")
 }

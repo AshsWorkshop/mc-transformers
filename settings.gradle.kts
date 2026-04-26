@@ -1,1 +1,1 @@
-rootProject.name = "common-transformers"
+rootProject.name = "transformers"
