@@ -1,8 +1,13 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
 import net.ashwork.gradle.multiloader.configureInheritingFeature
 import net.ashwork.gradle.multiloader.publication
 import net.ashwork.gradle.multiloader.publishedAccessTransformer
 import net.ashwork.gradle.multiloader.resolveProperty
+import java.io.FileWriter
+import java.nio.charset.StandardCharsets
 import java.nio.file.Files
+import java.security.MessageDigest
 
 plugins {
     java
@@ -351,6 +356,44 @@ val computeIntersection = tasks.register<Task>("computeTransformerIntersection")
             entries.flatMap { it.value }.map { it.original }.forEach { out.println(it) }
         }
     }
+}
+
+fun File.md5(): String {
+    val md = MessageDigest.getInstance("MD5")
+    val digest = md.digest(this.readBytes())
+    return digest.toHexString()
+}
+
+val checkFileHash = tasks.register<Task>("checkGeneratedTransformerHashes") {
+    group = "transformers"
+    description = "Checks the hashes of the generated artifacts."
+
+    // Define outputs
+    val taskOutput = rootProject.file(".generated-hashes.json")
+    outputs.file(taskOutput)
+
+    // Define inputs
+    inputs.dir(generatedTransformers)
+
+    // Check file hashes
+    var hasNewEntries = false
+    val entries = if (taskOutput.exists()) taskOutput.let {
+        copy {
+            from(it)
+            into(layout.buildDirectory.dir("compare"))
+        }
+        mutableMapOf<String, String>(*(JsonSlurper().parse(it) as Map<String, String>).toList().toTypedArray())
+    }
+    else mutableMapOf<String, String>()
+    inputs.files.forEach {
+        val relative = it.toRelativeString(generatedTransformers.get().asFile).replace(File.separator, "/")
+        val hash = it.md5()
+        if (relative !in entries || entries[relative] != hash) {
+            hasNewEntries = true
+        }
+        entries[relative] = hash
+    }
+    FileWriter(taskOutput, StandardCharsets.UTF_8).use { it.write(JsonOutput.prettyPrint(JsonOutput.toJson(entries))) }
 }
 
 // Setup publishing
