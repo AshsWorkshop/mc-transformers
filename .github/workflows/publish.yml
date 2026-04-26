@@ -1,0 +1,111 @@
+name: Publish Artifacts
+
+on:
+  schedule:
+    - cron: "20 2 * * 1"
+  workflow_dispatch:
+
+jobs:
+  determine-versions:
+    name: Determine versions to publish
+    runs-on: ubuntu-latest
+
+    outputs:
+      versions: ${{ steps.get_versions.outputs.versions }}
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Get versions
+        id: get_versions
+        shell: bash
+        run: |
+          # Loop through all version builds
+          output="["
+          while IFS= read -r line; do
+            # Extract from build version
+            output="${output}\"${line%%_*}\", "
+          done < <(grep -E "[0-9]+\.[0-9]+(?:\.[0-9]+)?_build=[0-9]+" gradle.properties)
+          output="${output::-2}]"
+          
+          # Output list
+          echo "versions=${output}" >> $GITHUB_OUTPUT
+
+  publish:
+    name: Publish ${{ matrix.versions }} artifacts
+    needs:
+      - determine-versions
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        versions: ${{ fromJSON(needs.determine-versions.outputs.versions) }}
+
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Extract Java version
+        id: extract_java
+        shell: bash
+        run: echo "java_version=$(grep 'java_version' gradle.properties | awk -F= '{$2=$2;print $2}')" >> $GITHUB_OUTPUT
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          java-version: ${{ steps.extract_java.outputs.java_version }}
+          distribution: 'microsoft'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
+
+      - name: Publish artifacts
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          UUID_USERNAME: ${{ secrets.UUID_USERNAME }}
+          UUID_PASSWORD: ${{ secrets.UUID_PASSWORD }}
+        run: |
+          # Unpack transformers
+          ./gradlew unpackTransformers
+          
+          # Then generate and compute artifacts
+          ./gradlew allTransformers
+          ./gradlew computeTransformerIntersection
+          
+          # Finally check transformer hashes
+          ./gradlew checkGeneratedTransformerHashes
+          
+          # If compare file doesn't exist or the file contents are not the same
+          if [[ ! -f "build/compare/${{ matrix.versions }}.json" ]] || (! cmp -s ".generated-hashes/${{ matrix.versions }}.json" "build/compare/${{ matrix.versions }}.json"); then
+            # Publish artifacts
+            ./gradlew publish
+          
+            # Bump associated artifact version
+            mod_build=$(grep '${{ matrix.versions }}_build' gradle.properties | awk -F= '{$2=$2;print $2}')
+            mod_build=$(($mod_build + 1))
+            sed -i "s/${{ matrix.versions }}_build=.*/${{ matrix.versions }}_build=$mod_build/" gradle.properties
+          fi
+
+      - name: Commit ${{ matrix.versions }} and push branch
+        shell: bash
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            # Setup user settings
+            git config --global user.name 'github-actions[bot]'
+            git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+            # Commit files
+            git add .
+            git commit -a -m "chore([skip ci]): Action ${{ github.run_number }}: ${{ matrix.versions }} bumps"
+            git push --force-with-lease -u origin ${{ github.ref_name }}
+          fi
