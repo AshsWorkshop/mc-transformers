@@ -179,12 +179,18 @@ data class FieldTransformer(val name: String, override val original: String): Tr
         return if(otherHasWildcard) setOf(this) else output
     }
 }
-class TransformerType(val name: String, val group: String, val extension: String, val reader: (File) -> Map<String, Set<Transformer>>, val header: String = "") {}
+data class TransformerGroup(val extension: String, val name: String, val header: String = "")
+class TransformerType(val groups: List<TransformerGroup>, val reader: (File) -> Map<String, Set<Transformer>>) {}
 
 fun buildTransformerTypes(): Map<String, TransformerType> {
+    val accessTransformers = TransformerGroup("cfg", "accessTransformers")
+    val classTweakers = TransformerGroup("classtweaker", "classTweakers", "classTweaker v1 official")
+    val accessWideners = TransformerGroup("accesswidener", "accessWideners", "accessWidener v2 named")
+
     val transformerTypes: MutableMap<String, TransformerType> = mutableMapOf()
-    transformerTypes.computeIfAbsent("cfg") { TransformerType("accesstransformer", "accessTransformers", it, ::fromTransformer) }
-    transformerTypes.computeIfAbsent("classtweaker") { TransformerType("accesswidener", "classTweakers", it, ::fromTweaker, "classTweaker  v1  official") }
+    transformerTypes.computeIfAbsent("cfg") { TransformerType(listOf(accessTransformers), ::fromTransformer) }
+    transformerTypes.computeIfAbsent("classtweaker") { TransformerType(listOf(classTweakers, accessWideners), ::fromTweaker) }
+    transformerTypes.computeIfAbsent("accesswidener") { TransformerType(listOf(accessWideners), ::fromTweaker) }
     return transformerTypes
 }
 
@@ -255,8 +261,10 @@ val allTransformers = tasks.register<Task>("allTransformers") {
     val transformerTypes = buildTransformerTypes()
 
     // Define outputs
-    val taskOutput = generatedTransformers.map { it.dir("main") }
-    outputs.dir(taskOutput)
+    val taskOutputNeo = generatedTransformers.map { it.dir("neoforge") }
+    val taskOutputFabric = generatedTransformers.map { it.dir("fabric") }
+    outputs.dir(taskOutputNeo)
+    outputs.dir(taskOutputFabric)
 
     // Define inputs
     inputs.dir(layout.buildDirectory.dir("transformers"))
@@ -277,11 +285,14 @@ val allTransformers = tasks.register<Task>("allTransformers") {
 
     // Write to a single file
     transformers.forEach { type, entries ->
-        val outputFile = taskOutput.map { it.file("${type.group}/${type.name}.${type.extension}") }
-        Files.createDirectories(outputFile.get().asFile.parentFile.toPath())
-        outputFile.get().asFile.printWriter(Charsets.UTF_8).use { out ->
-            if (type.header.isNotEmpty()) out.println(type.header)
-            entries.flatMap { it.value }.map { it.original }.forEach { out.println(it) }
+        val taskOutput = if (type.groups.find { it.name == "accessTransformers" } != null) taskOutputNeo else taskOutputFabric
+        type.groups.forEach { group ->
+            val outputFile = taskOutput.map { it.file("${group.name}/transformer.${group.extension}") }
+            Files.createDirectories(outputFile.get().asFile.parentFile.toPath())
+            outputFile.get().asFile.printWriter(Charsets.UTF_8).use { out ->
+                if (group.header.isNotEmpty()) out.println(group.header)
+                entries.flatMap { it.value }.map { it.original }.forEach { out.println(it) }
+            }
         }
     }
 }
@@ -294,7 +305,7 @@ val computeIntersection = tasks.register<Task>("computeTransformerIntersection")
     val transformerTypes = buildTransformerTypes()
 
     // Define outputs
-    val taskOutput = generatedTransformers.map { it.dir("common") }
+    val taskOutput = generatedTransformers.map { it.dir("main") }
     outputs.dir(taskOutput)
 
     // Define inputs
@@ -349,11 +360,13 @@ val computeIntersection = tasks.register<Task>("computeTransformerIntersection")
     }.toMap()
 
     output.forEach { type, entries ->
-        val outputFile = taskOutput.map { it.file("${type.group}/${type.name}.${type.extension}") }
-        Files.createDirectories(outputFile.get().asFile.parentFile.toPath())
-        outputFile.get().asFile.printWriter(Charsets.UTF_8).use { out ->
-            if (type.header.isNotEmpty()) out.println(type.header)
-            entries.flatMap { it.value }.map { it.original }.forEach { out.println(it) }
+        type.groups.forEach { group ->
+            val outputFile = taskOutput.map { it.file("${group.name}/transformer.${group.extension}") }
+            Files.createDirectories(outputFile.get().asFile.parentFile.toPath())
+            outputFile.get().asFile.printWriter(Charsets.UTF_8).use { out ->
+                if (group.header.isNotEmpty()) out.println(group.header)
+                entries.flatMap { it.value }.map { it.original }.forEach { out.println(it) }
+            }
         }
     }
 }
@@ -398,12 +411,13 @@ val checkFileHash = tasks.register<Task>("checkGeneratedTransformerHashes") {
 }
 
 // Setup publishing
-val intersect = configureInheritingFeature("common", "main", publish = true)
+configureInheritingFeature("fabric", "main", publish = true)
+configureInheritingFeature("neoforge", "main", publish = true)
 configureInheritingFeature("main", publish = true)
 
 generatedTransformers.get().asFileTree.forEach {
     var components = it.toRelativeString(generatedTransformers.get().asFile).split(File.separator)
-    project.publishedAccessTransformer(it, components[1], components[2].substring(0, components[2].indexOf(".")), components[0])
+    project.publishedAccessTransformer(it, components[1], components[0])
 }
 
 publication {

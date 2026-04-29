@@ -243,7 +243,7 @@ private fun Configuration.extendsFromNoArtifacts(project: Project, named: NamedD
 
 // Same logic as https://github.com/neoforged/ModDevGradle/blob/846b2d70f99519640efd6620e7d6f9034fe38285/src/main/java/net/neoforged/moddevgradle/internal/DataFileCollections.java#L107-L135
 // just for other features than the main one
-class AccessTransformerElementHelper constructor(val project: Project, variant: String, sourceSet: SourceSet) {
+class AccessTransformerElementHelper constructor(val project: Project, val variant: String, sourceSet: SourceSet) {
     var artifactCount: Int = 0
     var firstArtifact: ConfigurablePublishArtifact? = null
     val copyTaskName: String = sourceSet.getTaskName("copy", "${variant.replaceFirstChar { it.uppercase(Locale.ROOT) }}ElementsPublications")
@@ -302,7 +302,7 @@ abstract class UnzipTransformer : Transformer<FileCollection, Set<FileSystemLoca
 /**
  * Add an access transformer to MDG and publish it, but publish it in the specified feature (which need not be "main").
  */
-fun Project.publishedAccessTransformer(file: File, variant: String, classifierName: String, feature: String) {
+fun Project.publishedAccessTransformer(file: File, variant: String, feature: String) {
 //    val neoForge: NeoForgeExtension by extensions
 //    neoForge.accessTransformers {
 //        from(file.toRelativeString(project.projectDir))
@@ -335,6 +335,6 @@ fun Project.publishedAccessTransformer(file: File, variant: String, classifierNa
         // This extension (logic quite similar to MDG's) serves to track multiple access transformers we may add, so
         // that their classifiers are adjusted to not overlap when published.
         val helper: AccessTransformerElementHelper = sourceSet.extensions.getByName<AccessTransformerElementHelper>("_internal_${variant}RegistrationHelper")
-        helper.accept(file, classifierName, configuration)
+        helper.accept(file, categoryAttribute, configuration)
 //    }
 }
