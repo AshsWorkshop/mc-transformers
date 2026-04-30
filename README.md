@@ -175,7 +175,7 @@ Transformers publishes the following three category attributes:
 | `accesswidener`     | [Fabric](https://github.com/FabricMC/fabric-tooling)\*, [VanillaGradle](https://github.com/SpongePowered/VanillaGradle) |
 | `classtweaker` | [Fabric](https://github.com/FabricMC/fabric-tooling) |
 
-\* `accesswidener` is deprecated for fabric in favor of `classtweaker`
+\* `accesswidener` is deprecated for Fabric in favor of `classtweaker`
 
 These attributes can be selectively depended upon by setting the `attributes` block of the desired configuration, assuming your modding tool does not already provide support.
 
