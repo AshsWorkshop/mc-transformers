@@ -1,6 +1,6 @@
-# Minecraft Transformers
+# Transformers
 
-A utility for generating access transformers / access wideners from mod loaders for use in multi-loader projects.
+A utility for generating access transformers / wideners from Minecraft mod loaders for use in multi-loader projects.
 
 ## Repositories
 
