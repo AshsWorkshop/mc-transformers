@@ -61,12 +61,19 @@ repositories {
 
 The transformer versions are constructed using the version number for Minecraft appended with a build number (e.g. transformers for `26.1.2` would be `26.1.2.0`, `26.1.2.1`, etc.). If the version number for Minecraft does not have a third component, it must be set to `0` (e.g. transformers for `26.1` would be `26.1.0.0`, `26.1.0.1`, etc.).
 
+Transformers versions are broken into three priorities:
+
+* Latest: Transformers for all patches of the latest Minecraft minor release will be generated once a week.
+* Supported: Transformers for the latest patch of previous Minecraft minor releases (up to two years) will be generated once a month.
+* End-of-Life: Transformers for the latest patch of previous Minecraft minor releases (longer than two years) will be generated once a year.
+
+### Latest
+
 | Minecraft Version |                                                                                               Transformer Version                                                                                                |
 |:---:|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
-| 26.1 |  ![26.1 Maven Version](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fmaven.uuid.gg%2Fsnapshots%2Fnet%2Fashwork%2Fmc%2Ftransformers%2Fmaven-metadata.xml&filter=26.1.0.*&cacheSeconds=43200)  |
-| 26.1.1 | ![26.1.1 Maven Version](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fmaven.uuid.gg%2Fsnapshots%2Fnet%2Fashwork%2Fmc%2Ftransformers%2Fmaven-metadata.xml&filter=26.1.1.*&cacheSeconds=43200) |
 | 26.1.2 | ![26.1.2 Maven Version](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fmaven.uuid.gg%2Fsnapshots%2Fnet%2Fashwork%2Fmc%2Ftransformers%2Fmaven-metadata.xml&filter=26.1.2.*&cacheSeconds=43200) |
-
+| 26.1.1 | ![26.1.1 Maven Version](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fmaven.uuid.gg%2Fsnapshots%2Fnet%2Fashwork%2Fmc%2Ftransformers%2Fmaven-metadata.xml&filter=26.1.1.*&cacheSeconds=43200) |
+| 26.1 |  ![26.1 Maven Version](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fmaven.uuid.gg%2Fsnapshots%2Fnet%2Fashwork%2Fmc%2Ftransformers%2Fmaven-metadata.xml&filter=26.1.0.*&cacheSeconds=43200)  |
 
 ## Using the Transformers
 
