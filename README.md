@@ -165,6 +165,32 @@ afterEvaluate {
 
 </details>
 
+### [NeoGradle](https://github.com/neoforged/NeoGradle)
+
+<details open>
+
+<summary>build.gradle</summary>
+
+```groovy
+dependencies {
+    accessTransformer 'net.ashwork.mc:transformers:<MINECRAFT_VERSION>.+'
+}
+```
+
+</details>
+
+<details>
+
+<summary>build.gradle.kts</summary>
+
+```kotlin
+dependencies {
+    accessTransformer("net.ashwork.mc:transformers:<MINECRAFT_VERSION>.+")
+}
+```
+
+</details>
+
 ## Attributes
 
 Transformers publishes the following three category attributes:
