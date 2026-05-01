@@ -77,7 +77,7 @@ Transformers versions are broken into three priorities:
 
 ## Using the Transformers
 
-### [NeoForm via ModDevGradle](https://github.com/neoforged/ModDevGradle#vanilla-mode)
+### [NeoForm via ModDevGradle](https://github.com/neoforged/ModDevGradle#vanilla-mode) (Recommended)
 
 <details open>
 
@@ -103,9 +103,37 @@ dependencies {
 
 </details>
 
-### [VanillaGradle](https://github.com/SpongePowered/VanillaGradle)
+### [NeoGradle](https://github.com/neoforged/NeoGradle)
 
 <details open>
+
+<summary>build.gradle</summary>
+
+```groovy
+dependencies {
+    accessTransformer 'net.ashwork.mc:transformers:<MINECRAFT_VERSION>.+'
+}
+```
+
+</details>
+
+<details>
+
+<summary>build.gradle.kts</summary>
+
+```kotlin
+dependencies {
+    accessTransformer("net.ashwork.mc:transformers:<MINECRAFT_VERSION>.+")
+}
+```
+
+</details>
+
+### [VanillaGradle](https://github.com/SpongePowered/VanillaGradle) (Deprecated)
+
+You should not be using VanillaGradle in multiloader projects. Use one of the above entries instead. This example is provided for legacy support and is bad due to the limitations of the plugin. 
+
+<details>
 
 <summary>build.gradle</summary>
 
@@ -160,32 +188,6 @@ afterEvaluate {
     // Pass the access transformers to VanillaGradle
     extensions.getByName<MinecraftExtension>("minecraft")
         .accessWideners(*accessWideners.incoming.artifacts.map { it.file }.toTypedArray())
-}
-```
-
-</details>
-
-### [NeoGradle](https://github.com/neoforged/NeoGradle)
-
-<details open>
-
-<summary>build.gradle</summary>
-
-```groovy
-dependencies {
-    accessTransformer 'net.ashwork.mc:transformers:<MINECRAFT_VERSION>.+'
-}
-```
-
-</details>
-
-<details>
-
-<summary>build.gradle.kts</summary>
-
-```kotlin
-dependencies {
-    accessTransformer("net.ashwork.mc:transformers:<MINECRAFT_VERSION>.+")
 }
 ```
 
