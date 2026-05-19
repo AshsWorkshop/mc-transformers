@@ -14,7 +14,7 @@ jobs:
       versions: ${{ steps.get_versions.outputs.versions }}
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: AshsWorkshop/actions/checkout@8ea65337160cab4672107cb767eff9b122b7b119 # main
         with:
           ref: ${{ github.ref_name }}
 
@@ -48,7 +48,7 @@ jobs:
       packages: write
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: AshsWorkshop/actions/checkout@8ea65337160cab4672107cb767eff9b122b7b119 # main
         with:
           ref: ${{ github.ref_name }}
 
@@ -58,15 +58,13 @@ jobs:
         run: echo "java_version=$(grep 'java_version' gradle.properties | awk -F= '{$2=$2;print $2}')" >> $GITHUB_OUTPUT
 
       - name: Setup Java
-        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654
+        uses: AshsWorkshop/actions/setup-java@8ea65337160cab4672107cb767eff9b122b7b119 # main
         with:
           java-version: ${{ steps.extract_java.outputs.java_version }}
           distribution: 'microsoft'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e
-        with:
-          cache-provider: basic
+        uses: AshsWorkshop/actions/setup-gradle@8ea65337160cab4672107cb767eff9b122b7b119 # main
 
       - name: Publish artifacts
         shell: bash
