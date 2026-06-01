@@ -1,8 +1,8 @@
 {
-    "fabric/classTweakers/transformer.classtweaker": "843d2ceab3feccbf325c3cf21772c391",
-    "fabric/accessWideners/transformer.accesswidener": "0d1340e6f173c3644b3239134e257a4c",
-    "main/accessTransformers/transformer.cfg": "08d16b1ddd5bc9c60ec0d5125cacc031",
-    "main/classTweakers/transformer.classtweaker": "bed06725a8db4b8a94a019133553f57f",
-    "main/accessWideners/transformer.accesswidener": "5139e68127994e5453f6f3c97cc66712",
-    "neoforge/accessTransformers/transformer.cfg": "db61f910c10326f7c4233355c4fe32c3"
+    "fabric/classTweakers/transformer.classtweaker": "90694bb5e833263da886e95a5b45ddd1",
+    "fabric/accessWideners/transformer.accesswidener": "0bc89e1885b556089a5de7d6052c90eb",
+    "main/accessTransformers/transformer.cfg": "96c8eed39fd28b98170f4479976e3c36",
+    "main/classTweakers/transformer.classtweaker": "ba204e55a4505cbbbd1b3d1258a64d48",
+    "main/accessWideners/transformer.accesswidener": "c8f3798a97fa48de04841e898ef03f9b",
+    "neoforge/accessTransformers/transformer.cfg": "85d9ab20280fcfc2fbc99cf09558b24d"
 }
