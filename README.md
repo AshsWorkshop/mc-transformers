@@ -71,6 +71,7 @@ Transformers versions are broken into three priorities:
 
 | Minecraft Version |                                                                                               Transformer Version                                                                                                |
 |:---:|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
+| 26.2 |  ![26.2 Maven Version](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fmaven.uuid.gg%2Fsnapshots%2Fnet%2Fashwork%2Fmc%2Ftransformers%2Fmaven-metadata.xml&filter=26.2.0.*&cacheSeconds=43200)  |
 | 26.1.2 | ![26.1.2 Maven Version](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fmaven.uuid.gg%2Fsnapshots%2Fnet%2Fashwork%2Fmc%2Ftransformers%2Fmaven-metadata.xml&filter=26.1.2.*&cacheSeconds=43200) |
 | 26.1.1 | ![26.1.1 Maven Version](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fmaven.uuid.gg%2Fsnapshots%2Fnet%2Fashwork%2Fmc%2Ftransformers%2Fmaven-metadata.xml&filter=26.1.1.*&cacheSeconds=43200) |
 | 26.1 |  ![26.1 Maven Version](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fmaven.uuid.gg%2Fsnapshots%2Fnet%2Fashwork%2Fmc%2Ftransformers%2Fmaven-metadata.xml&filter=26.1.0.*&cacheSeconds=43200)  |
