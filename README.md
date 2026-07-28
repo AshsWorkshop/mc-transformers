@@ -130,6 +130,32 @@ dependencies {
 
 </details>
 
+### [Fabric Loom](https://github.com/FabricMC/fabric-loom)
+
+<details open>
+
+<summary>build.gradle</summary>
+
+```groovy
+dependencies {
+    implementation 'net.ashwork.mc:transformers:<MINECRAFT_VERSION>.+'
+}
+```
+
+</details>
+
+<details>
+
+<summary>build.gradle.kts</summary>
+
+```kotlin
+dependencies {
+    implementation("net.ashwork.mc:transformers:<MINECRAFT_VERSION>.+")
+}
+```
+
+</details>
+
 ### [VanillaGradle](https://github.com/SpongePowered/VanillaGradle) (Deprecated)
 
 You should not be using VanillaGradle in multiloader projects. Use one of the above entries instead. This example is provided for legacy support and is bad due to the limitations of the plugin. 
@@ -256,6 +282,10 @@ dependencies {
 ```
 
 </details>
+
+### Fabric Mod JARs
+
+
 
 ## Available Features
 

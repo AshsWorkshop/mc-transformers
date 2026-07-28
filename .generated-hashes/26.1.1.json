@@ -1,8 +1,0 @@
-{
-    "main/accessWideners/transformer.accesswidener": "5139e68127994e5453f6f3c97cc66712",
-    "main/classTweakers/transformer.classtweaker": "bed06725a8db4b8a94a019133553f57f",
-    "main/accessTransformers/transformer.cfg": "96c8eed39fd28b98170f4479976e3c36",
-    "fabric/accessWideners/transformer.accesswidener": "749c09d18d74b61758cfc02b3de33a74",
-    "fabric/classTweakers/transformer.classtweaker": "bbd288f13222e0c5dabc6003492b2b2f",
-    "neoforge/accessTransformers/transformer.cfg": "85d9ab20280fcfc2fbc99cf09558b24d"
-}
