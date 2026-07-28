@@ -1,0 +1,14 @@
+{
+    "schemaVersion": 1,
+    "id": "ashwork-transformers",
+    "version": "${version}",
+    "authors": [
+        "Ashwork"
+    ],
+    "contact": {
+        "sources": "https://github.com/AshsWorkshop/mc-transformers"
+    },
+    "license": "MIT",
+    "environment": "*",
+    "accessWidener": "${transformer_path}"
+}

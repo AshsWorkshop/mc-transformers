@@ -8,6 +8,7 @@ import java.io.FileWriter
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.security.MessageDigest
+import java.util.Locale
 
 plugins {
     java
@@ -410,6 +411,45 @@ val checkFileHash = tasks.register<Task>("checkGeneratedTransformerHashes") {
     FileWriter(taskOutput, StandardCharsets.UTF_8).use { it.write(JsonOutput.prettyPrint(JsonOutput.toJson(entries))) }
 }
 
+// Create Fabric mod JAR for transformers
+fun publishedFabricModJar(file: File, variant: String, feature: String) {
+    val variantName: String = variant.substring(0, variant.length - 1)
+    val modJar = tasks.register<Jar>("${feature}${variantName.replaceFirstChar { it.uppercase(Locale.ROOT) }}Jar") {
+        description = "Creates the Fabric mod JAR for the ${feature} ${variant}"
+        // Set classifier to variant
+        archiveClassifier.set("${if (feature == "main") "" else "${feature}-"}${variantName.lowercase(Locale.ROOT)}")
+
+        // Add transformer
+        from(file)
+        // Add mod json
+        from(projectDir.resolve("template/fabric.mod.json")) {
+            var replacements = mapOf(
+                "version" to version,
+                "transformer_path" to file.name
+            )
+            inputs.properties(replacements)
+            expand(replacements)
+        }
+
+        // Add license
+        from(projectDir.resolve("LICENSE")) {
+            rename { "META-INF/${it}" }
+        }
+    }
+
+    // Add jar to publishing
+    val sourceSet = sourceSets.findByName(feature)
+    if (sourceSet == null) throw IllegalStateException("Not sure how we got here");
+    listOf(sourceSet.apiElementsConfigurationName, sourceSet.runtimeElementsConfigurationName).forEach {
+        val configuration = configurations.findByName(it)!!
+        val java = project.components.getByName("java") as AdhocComponentWithVariants
+        java.addVariantsFromConfiguration(configuration) {}
+        // Remove main jar
+        configuration.artifacts.removeIf { it.classifier == (if (feature == "main") "" else feature) && it.extension == "jar" }
+        project.artifacts.add(it, modJar)
+    }
+}
+
 // Setup publishing
 configureInheritingFeature("fabric", "main", publish = true)
 configureInheritingFeature("neoforge", "main", publish = true)
@@ -418,6 +458,9 @@ configureInheritingFeature("main", publish = true)
 generatedTransformers.get().asFileTree.forEach {
     var components = it.toRelativeString(generatedTransformers.get().asFile).split(File.separator)
     project.publishedAccessTransformer(it, components[1], components[0])
+    if (!it.name.endsWith("cfg")) {
+        publishedFabricModJar(it, components[1], components[0])
+    }
 }
 
 publication {
