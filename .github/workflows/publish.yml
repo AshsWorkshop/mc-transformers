@@ -73,7 +73,7 @@ jobs:
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          UUID_USERNAME: ${{ secrets.UUID_USERNAME }}
+          UUID_USERNAME: ${{ vars.UUID_USERNAME }}
           UUID_PASSWORD: ${{ secrets.UUID_PASSWORD }}
         run: |
           # Unpack transformers
