@@ -99,7 +99,7 @@ jobs:
           fi
 
       - name: Generate Gradle job summary
-        uses: AshsWorkshop/actions/gradle-job-summary@aaed41d9ac7f760ea71417fd9aabd2405f04a9e4 # main
+        uses: AshsWorkshop/actions/gradle-job-summary@e7293abc0743ce59cf033e05d3e7fc8ed6c555bf # main
 
       - name: Commit ${{ matrix.versions }} and push branch
         shell: bash
