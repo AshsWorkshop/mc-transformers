@@ -87,19 +87,51 @@ jobs:
           ./gradlew checkGeneratedTransformerHashes -Pminecraft_version='${{ matrix.versions }}' 
           
           # If compare file doesn't exist or the file contents are not the same
+          VERSION_RELEASE=""
           if [[ ! -f "build/compare/${{ matrix.versions }}.json" ]] || (! cmp -s ".generated-hashes/${{ matrix.versions }}.json" "build/compare/${{ matrix.versions }}.json"); then
             # Publish artifacts
             ./gradlew publish -Pminecraft_version='${{ matrix.versions }}' 
           
             # Bump associated artifact version
             mod_build=$(grep '${{ matrix.versions }}_build' gradle.properties | awk -F= '{$2=$2;print $2}')
-            echo "published_version=${{ matrix.versions }}.$mod_build" >> $GITHUB_OUTPUT
+            VERSION_RELEASE="${{ matrix.versions }}.$mod_build"
             mod_build=$(($mod_build + 1))
             sed -i "s/${{ matrix.versions }}_build=.*/${{ matrix.versions }}_build=$mod_build/" gradle.properties
           fi
+          # Report release version
+          echo "published_version=$VERSION_RELEASE" >> $GITHUB_OUTPUT
 
       - name: Generate Gradle job summary
-        uses: AshsWorkshop/actions/gradle-job-summary@e7293abc0743ce59cf033e05d3e7fc8ed6c555bf # main
+        uses: AshsWorkshop/actions/gradle-job-summary@7ab94b37b6bdb1608b8d98731e3489dc967a3285 # main
+
+      - name: Generate artifact example
+        shell: bash
+        run: |
+          published_version=${{ steps.publish_artifacts.outputs.published_version }}
+          minecraft_version=${{ matrix.versions }}
+          echo "### Artifact Info" >> $GITHUB_STEP_SUMMARY
+          # Check if a version was published
+          if [ -n "$published_version"]; then
+            # Create template
+            mkdir $RUNNER_TEMP/examples
+            mdg_version=$(curl "https://maven.neoforged.net/api/maven/versions/releases/net/neoforged/moddev-gradle" | jq -r '.versions[-1]')
+            envsubst '$mdg_version $minecraft_version $published_version' < template/neoform.gradle.kts > $RUNNER_TEMP/examples/neoform.gradle.kts
+          
+            # Output info and example
+            echo "**$published_version** has been successfully published!" >> $GITHUB_STEP_SUMMARY
+            echo "```kotlin" >> $GITHUB_STEP_SUMMARY
+            cat $RUNNER_TEMP/examples/neoform.gradle.kts >> $GITHUB_STEP_SUMMARY
+            echo "```" >> $GITHUB_STEP_SUMMARY
+          else
+            # Otherwise, display last version
+            filter_mc_version=$minecraft_version
+            if [ $(tr -dc '.' <<< $filter_mc_version | wc -c) -eq 1 ]; then
+              filter_mc_version="${filter_mc_version}.0"
+            fi
+            published_version=$(curl "https://maven.uuid.gg/api/maven/versions/snapshots/net/ashwork/mc/transformers?filter=$filter_mc_version" | jq -r '.versions[-1]')
+            echo "No new releases. **$published_version** is still the latest version." >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "---" >> $GITHUB_STEP_SUMMARY
 
       - name: Commit ${{ matrix.versions }} and push branch
         shell: bash
