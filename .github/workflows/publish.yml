@@ -65,8 +65,11 @@ jobs:
 
       - name: Setup Gradle
         uses: AshsWorkshop/actions/setup-gradle@4b6fee62c3383c7c4a8b7878a74cce7707a98421 # main
+        with:
+          add-job-summary: 'never'
 
       - name: Publish artifacts
+        id: publish_artifacts
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -90,9 +93,13 @@ jobs:
           
             # Bump associated artifact version
             mod_build=$(grep '${{ matrix.versions }}_build' gradle.properties | awk -F= '{$2=$2;print $2}')
+            echo "published_version=${{ matrix.versions }}.$mod_build" >> $GITHUB_OUTPUT
             mod_build=$(($mod_build + 1))
             sed -i "s/${{ matrix.versions }}_build=.*/${{ matrix.versions }}_build=$mod_build/" gradle.properties
           fi
+
+      - name: Generate Gradle job summary
+        uses: AshsWorkshop/actions/gradle-job-summary@3aa5f9872385230ad1ec446e3ed883081c0aeba8 # main
 
       - name: Commit ${{ matrix.versions }} and push branch
         shell: bash
