@@ -108,31 +108,35 @@ jobs:
         shell: bash
         run: |
           published_version=${{ steps.publish_artifacts.outputs.published_version }}
-          minecraft_version=${{ matrix.versions }}
+          minecraft_version="${{ matrix.versions }}"
           echo "### Artifact Info" >> $GITHUB_STEP_SUMMARY
           # Check if a version was published
-          echo $published_version #TODO: REMOVE
           if [ -n $published_version ]; then
             # Create template
             mkdir $RUNNER_TEMP/examples
-            mdg_version=$(curl "https://maven.neoforged.net/api/maven/versions/releases/net/neoforged/moddev-gradle" | jq -r '.versions[-1]')
+            mdg_version="$(curl "https://maven.neoforged.net/api/maven/versions/releases/net/neoforged/moddev-gradle" | jq -r '.versions[-1]')"
             EXAMPLE_OUTPUT="$RUNNER_TEMP/examples/neoform.gradle.kts"
+          
+            export mdg_version
+            export minecraft_version
+            export published_version
             envsubst '$mdg_version $minecraft_version $published_version' < template/neoform.gradle.kts > $EXAMPLE_OUTPUT
-            cat $EXAMPLE_OUTPUT #TODO: REMOVE
+            unset mdg_version
+            unset minecraft_version
+            unset published_version
             
             # Output info and example
             echo "**$published_version** has been successfully published!" >> $GITHUB_STEP_SUMMARY
-            echo "```kotlin" >> $GITHUB_STEP_SUMMARY
+            echo '```kotlin' >> $GITHUB_STEP_SUMMARY
             cat $EXAMPLE_OUTPUT >> $GITHUB_STEP_SUMMARY
-            echo "```" >> $GITHUB_STEP_SUMMARY
-            cat $GITHUB_STEP_SUMMARY #TODO: REMOVE
+            echo '```' >> $GITHUB_STEP_SUMMARY
           else
             # Otherwise, display last version
             filter_mc_version=$minecraft_version
             if [ $(tr -dc '.' <<< $filter_mc_version | wc -c) -eq 1 ]; then
               filter_mc_version="${filter_mc_version}.0"
             fi
-            published_version=$(curl "https://maven.uuid.gg/api/maven/versions/snapshots/net/ashwork/mc/transformers?filter=$filter_mc_version" | jq -r '.versions[-1]')
+            published_version="$(curl "https://maven.uuid.gg/api/maven/versions/snapshots/net/ashwork/mc/transformers?filter=$filter_mc_version" | jq -r '.versions[-1]')"
             echo "No new releases. **$published_version** is still the latest version." >> $GITHUB_STEP_SUMMARY
           fi
           echo "---" >> $GITHUB_STEP_SUMMARY
