@@ -139,6 +139,7 @@ jobs:
             published_version="$(curl "https://maven.uuid.gg/api/maven/versions/snapshots/net/ashwork/mc/transformers?filter=$filter_mc_version" | jq -r '.versions[-1]')"
             echo "No new releases. **$published_version** is still the latest version." >> $GITHUB_STEP_SUMMARY
           fi
+          echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
 
       - name: Commit ${{ matrix.versions }} and push branch
