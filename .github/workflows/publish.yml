@@ -111,17 +111,21 @@ jobs:
           minecraft_version=${{ matrix.versions }}
           echo "### Artifact Info" >> $GITHUB_STEP_SUMMARY
           # Check if a version was published
+          echo $published_version #TODO: REMOVE
           if [ -n $published_version ]; then
             # Create template
             mkdir $RUNNER_TEMP/examples
             mdg_version=$(curl "https://maven.neoforged.net/api/maven/versions/releases/net/neoforged/moddev-gradle" | jq -r '.versions[-1]')
-            envsubst '$mdg_version $minecraft_version $published_version' < template/neoform.gradle.kts > $RUNNER_TEMP/examples/neoform.gradle.kts
-          
+            EXAMPLE_OUTPUT="$RUNNER_TEMP/examples/neoform.gradle.kts"
+            envsubst '$mdg_version $minecraft_version $published_version' < template/neoform.gradle.kts > $EXAMPLE_OUTPUT
+            cat $EXAMPLE_OUTPUT #TODO: REMOVE
+            
             # Output info and example
             echo "**$published_version** has been successfully published!" >> $GITHUB_STEP_SUMMARY
             echo "```kotlin" >> $GITHUB_STEP_SUMMARY
-            cat $RUNNER_TEMP/examples/neoform.gradle.kts >> $GITHUB_STEP_SUMMARY
+            cat $EXAMPLE_OUTPUT >> $GITHUB_STEP_SUMMARY
             echo "```" >> $GITHUB_STEP_SUMMARY
+            cat $GITHUB_STEP_SUMMARY #TODO: REMOVE
           else
             # Otherwise, display last version
             filter_mc_version=$minecraft_version
