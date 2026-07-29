@@ -111,7 +111,7 @@ jobs:
           minecraft_version="${{ matrix.versions }}"
           echo "### Artifact Info" >> $GITHUB_STEP_SUMMARY
           # Check if a version was published
-          if [ -n $published_version ]; then
+          if [ -n "$published_version" ]; then
             # Create template
             mkdir $RUNNER_TEMP/examples
             mdg_version="$(curl "https://maven.neoforged.net/api/maven/versions/releases/net/neoforged/moddev-gradle" | jq -r '.versions[-1]')"
