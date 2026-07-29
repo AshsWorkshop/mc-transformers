@@ -107,7 +107,7 @@ jobs:
       - name: Generate artifact example
         shell: bash
         run: |
-          published_version=${{ steps.publish_artifacts.outputs.published_version }}
+          published_version="${{ steps.publish_artifacts.outputs.published_version }}"
           minecraft_version="${{ matrix.versions }}"
           echo "### Artifact Info" >> $GITHUB_STEP_SUMMARY
           # Check if a version was published
