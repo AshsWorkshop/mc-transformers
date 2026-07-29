@@ -102,7 +102,7 @@ jobs:
           echo "published_version=$VERSION_RELEASE" >> $GITHUB_OUTPUT
 
       - name: Generate Gradle job summary
-        uses: AshsWorkshop/actions/gradle-job-summary@7ab94b37b6bdb1608b8d98731e3489dc967a3285 # main
+        uses: AshsWorkshop/actions/gradle-job-summary@0e8fad11c6fe005217c0440719523927df4d1e5f # main
 
       - name: Generate artifact example
         shell: bash
