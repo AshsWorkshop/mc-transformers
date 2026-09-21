@@ -1,6 +1,6 @@
 {
-    "fabric/accessWideners/transformer.accesswidener": "d8837ff9ecf52999829d75988b14dbe2",
-    "fabric/classTweakers/transformer.classtweaker": "ed26921ebbef1fccf75c0c87474113e5",
+    "fabric/accessWideners/transformer.accesswidener": "c032fc6438e72cc20a2814e58e7a2494",
+    "fabric/classTweakers/transformer.classtweaker": "2b4c62a6bd9e59591bd9ac9e634daf07",
     "main/accessWideners/transformer.accesswidener": "62415b74c5860012ffc817703a0cf822",
     "main/accessTransformers/transformer.cfg": "92362770eedcd2880dbe36e289a3f479",
     "main/classTweakers/transformer.classtweaker": "f8efa8d56c4f6843664640d09128ef3c",
